@@ -30,5 +30,37 @@
         "destination": "Dallas",
         "cost": 401,
         "reservation_type": "TripReservation"
+    },
+    {
+        "trip_type": "FLIGHT",
+        "date": "2024-10-25",
+        "departure": "La Paz",
+        "destination": "Santa Cruz",
+        "cost": 446,
+        "reservation_type": "TripReservation"
+    },
+    {
+        "trip_type": "BUS",
+        "date": "2024-10-25",
+        "departure": "La Paz",
+        "destination": "Cochabamba",
+        "cost": 30,
+        "reservation_type": "TripReservation"
+    },
+    {
+        "checkin_date": "2024-10-25",
+        "checkout_date": "2024-10-30",
+        "hotel_name": "Hotel Radisson",
+        "city": "La Paz",
+        "cost": 58,
+        "reservation_type": "HotelReservation"
+    },
+    {
+        "reservation_time": "2024-10-25T00:00:00",
+        "restaurant": "La Suisse",
+        "city": "La Paz",
+        "dish": "Trucha",
+        "cost": 16,
+        "reservation_type": "RestaurantReservation"
     }
 ]
