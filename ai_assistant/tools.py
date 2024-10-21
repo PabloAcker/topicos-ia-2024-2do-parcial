@@ -29,122 +29,99 @@ travel_guide_tool = QueryEngineTool(
 )
 
 
-# Tool functions
-def reserve_flight(date_str: str, departure: str, destination: str) -> TripReservation:
+# Helper function to create a reservation
+def create_reservation(reservation_type: str, cost_range: tuple, **kwargs):
     """
-    Book a flight between two cities for a specific date.
+    General function to create different types of reservations with random costs.
 
     Args:
-        date_str (str): Flight date in ISO format (YYYY-MM-DD).
-        departure (str): Departure city.
-        destination (str): Destination city.
+        reservation_type (str): Type of reservation ('flight', 'bus', 'hotel', or 'restaurant').
+        cost_range (tuple): A tuple representing the min and max cost.
+        kwargs (dict): Additional reservation details (varies by type).
 
     Returns:
-        TripReservation: A TripReservation instance that contains the reservation details, such as trip type,
-         date, departure location, destination location, and cost.
-
-    Ejemplo:
-        reserve_flight('2024-12-01', 'La Paz', 'Santa Cruz')
+        Reservation object depending on type.
     """
-    print(
-        f"Making flight reservation from {departure} to {destination} on date: {date}"
-    )
-    reservation = TripReservation(
-        trip_type=TripType.flight,
+    cost = randint(*cost_range)
+    reservation_data = kwargs.copy()
+    reservation_data['cost'] = cost
+
+    if reservation_type == "flight" or reservation_type == "bus":
+        return TripReservation(trip_type=TripType[reservation_type], **reservation_data)
+    elif reservation_type == "hotel":
+        return HotelReservation(**reservation_data)
+    elif reservation_type == "restaurant":
+        return RestaurantReservation(**reservation_data)
+
+# Flight reservation function
+def reserve_flight(date_str: str, departure: str, destination: str) -> TripReservation:
+    print(f"Making flight reservation from {departure} to {destination} on date: {date_str}")
+    reservation = create_reservation(
+        reservation_type="flight",
+        cost_range=(200, 700),
         departure=departure,
         destination=destination,
-        date=date.fromisoformat(date_str),
-        cost=randint(200, 700),
+        date=date.fromisoformat(date_str)
     )
-
     save_reservation(reservation)
     return reservation
-
 
 flight_tool = FunctionTool.from_defaults(fn=reserve_flight, return_direct=False)
 
-def reserve_hotel(checkin_date: str, checkout_date: str, hotel_name: str, city: str) -> HotelReservation:
-    """
-    Book a hotel in a specific city between two dates.
-
-    Args:
-        checkin_date (str): Check-in date in ISO format (YYYY-MM-DD).
-        checkout_date (str): Check-out date in ISO format (YYYY-MM-DD).
-        hotel_name (str): Hotel name.
-        city (str): City where the reservation is made.
-
-    Returns:
-        HotelReservation: Hotel reservation details.
-    """
-    print(f"Making hotel reservation at {hotel_name} in {city} from {checkin_date} to {checkout_date}")
-    reservation = HotelReservation(
-        checkin_date=date.fromisoformat(checkin_date),
-        checkout_date=date.fromisoformat(checkout_date),
-        hotel_name=hotel_name,
-        city=city,
-        cost=randint(50, 300),
-    )
-
-    save_reservation(reservation)
-    return reservation
-
-hotel_tool = FunctionTool.from_defaults(fn=reserve_hotel, return_direct=False)
-
-
+# Bus reservation function
 def reserve_bus(date_str: str, departure: str, destination: str) -> TripReservation:
-    """
-    Book a bus trip between two cities on a specific date.
-
-    Args:
-        date_str (str): Trip date in ISO format.
-        departure (str): Departure city.
-        destination (str): Destination city.
-
-    Returns:
-        TripReservation: A TripReservation instance with the reservation details.
-    """
     print(f"Making bus reservation from {departure} to {destination} on date: {date_str}")
-    reservation = TripReservation(
-        trip_type=TripType.bus,
+    reservation = create_reservation(
+        reservation_type="bus",
+        cost_range=(50, 200),
         departure=departure,
         destination=destination,
-        date=date.fromisoformat(date_str),
-        cost=randint(20, 100),
+        date=date.fromisoformat(date_str)
     )
-
     save_reservation(reservation)
     return reservation
 
 bus_tool = FunctionTool.from_defaults(fn=reserve_bus, return_direct=False)
 
+# Hotel reservation function
+def reserve_hotel(checkin_date_str: str, checkout_date_str: str, hotel_name: str, city: str) -> HotelReservation:
+    print(f"Making hotel reservation at {hotel_name} in {city} from {checkin_date_str} to {checkout_date_str}")
+    checkin_date = date.fromisoformat(checkin_date_str)
+    checkout_date = date.fromisoformat(checkout_date_str)
+    num_nights = (checkout_date - checkin_date).days
+    total_cost = num_nights * randint(100, 300)
+    
+    reservation = create_reservation(
+        reservation_type="hotel",
+        cost_range=(100 * num_nights, 300 * num_nights),
+        checkin_date=checkin_date,
+        checkout_date=checkout_date,
+        hotel_name=hotel_name,
+        city=city,
+        cost=total_cost
+    )
+    save_reservation(reservation)
+    return reservation
 
-def reserve_restaurant(reservation_time: str, restaurant: str, city: str, dish: str) -> RestaurantReservation:
-    """
-    Make a reservation at a restaurant in a specific city for a given time.
+hotel_tool = FunctionTool.from_defaults(fn=reserve_hotel, return_direct=False)
 
-    Args:
-        reservation_time (str): Reservation time in ISO format.
-        restaurant (str): Restaurant name.
-        city (str): City where the restaurant is located.
-        dish (str): Dish to be ordered.
-
-    Returns:
-        RestaurantReservation: Restaurant reservation details.
-    """
-    print(f"Reserving a table at {restaurant} in {city} for {dish} at {reservation_time}")
-    reservation = RestaurantReservation(
-        reservation_time=datetime.fromisoformat(reservation_time),
+# Restaurant reservation function
+def reserve_restaurant(reservation_datetime_str: str, restaurant: str, city: str, dish: str = "not specified") -> RestaurantReservation:
+    print(f"Making restaurant reservation at {restaurant} in {city} on {reservation_datetime_str}")
+    reservation_time = datetime.fromisoformat(reservation_datetime_str)
+    
+    reservation = create_reservation(
+        reservation_type="restaurant",
+        cost_range=(20, 100),
+        reservation_time=reservation_time,
         restaurant=restaurant,
         city=city,
-        dish=dish,
-        cost=randint(10, 50),
+        dish=dish
     )
-
     save_reservation(reservation)
     return reservation
 
 restaurant_tool = FunctionTool.from_defaults(fn=reserve_restaurant, return_direct=False)
-
 
 def generate_trip_report() -> str:
     """
