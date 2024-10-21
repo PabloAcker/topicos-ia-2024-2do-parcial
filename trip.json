@@ -62,5 +62,29 @@
         "dish": "Trucha",
         "cost": 16,
         "reservation_type": "RestaurantReservation"
+    },
+    {
+        "trip_type": "BUS",
+        "date": "2024-10-25",
+        "departure": "Cochabamba",
+        "destination": "Oruro",
+        "cost": 92,
+        "reservation_type": "TripReservation"
+    },
+    {
+        "trip_type": "BUS",
+        "date": "2024-10-25",
+        "departure": "Oruro",
+        "destination": "Sucre",
+        "cost": 87,
+        "reservation_type": "TripReservation"
+    },
+    {
+        "trip_type": "FLIGHT",
+        "date": "2024-11-25",
+        "departure": "La Paz",
+        "destination": "Cochabamba",
+        "cost": 560,
+        "reservation_type": "TripReservation"
     }
 ]

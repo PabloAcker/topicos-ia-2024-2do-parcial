@@ -6,8 +6,9 @@ from ai_assistant.tools import (
     hotel_tool,
     bus_tool,
     restaurant_tool,
+    trip_report_tool
 )
-
+from ai_assistant.prompts import agent_prompt_tpl, travel_guide_qa_tpl
 
 class TravelAgent:
     def __init__(self, system_prompt: PromptTemplate | None = None):
@@ -18,6 +19,7 @@ class TravelAgent:
                 hotel_tool,
                 bus_tool,
                 restaurant_tool,
+                trip_report_tool
             ],
             verbose=True,
         )

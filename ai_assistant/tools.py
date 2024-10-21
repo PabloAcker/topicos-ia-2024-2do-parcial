@@ -11,6 +11,9 @@ from ai_assistant.models import (
     RestaurantReservation,
 )
 from ai_assistant.utils import save_reservation
+import json
+from ai_assistant.config import get_agent_settings
+from ai_assistant.utils import custom_serializer
 
 SETTINGS = get_agent_settings()
 
@@ -143,5 +146,57 @@ def reserve_restaurant(reservation_time: str, restaurant: str, city: str, dish: 
 restaurant_tool = FunctionTool.from_defaults(fn=reserve_restaurant, return_direct=False)
 
 
+def generate_trip_report() -> str:
+    """
+    Generates a detailed report of the trip based on the trip log (trip.json).
+    The report includes all activities organized by place and date, a total budget summary,
+    and comments about the places and activities.
+
+    Returns:
+        str: A detailed trip report summarizing the activities, places, dates, and costs.
+    """
+    log_file = SETTINGS.log_file
+    report = []
+    total_cost = 0
+    places_visited = {}
+    
+    try:
+        # Leer el archivo de registro de actividades
+        with open(log_file, 'r') as file:
+            trip_data = json.load(file)
+        
+        # Organizar las actividades por lugar y fecha
+        for entry in trip_data:
+            city = entry.get('city', entry.get('destination', 'Unknown'))
+            date = entry.get('date', entry.get('checkin_date', entry.get('reservation_time', 'Unknown')))
+            cost = entry.get('cost', 0)
+            total_cost += cost
+
+            if city not in places_visited:
+                places_visited[city] = []
+
+            activity = f"{entry['reservation_type']} on {date} - Cost: ${cost}"
+            places_visited[city].append(activity)
+        
+        # Crear el reporte detallado
+        for city, activities in places_visited.items():
+            report.append(f"City: {city}")
+            report.extend(activities)
+            report.append("\n")
+        
+        report.append(f"Total budget for the trip: ${total_cost}")
+    
+    except FileNotFoundError:
+        return "Error: trip log file not found."
+    except json.JSONDecodeError:
+        return "Error: Could not decode the trip log file."
+
+    return "\n".join(report)
+
+# Register this tool as a FunctionTool
+trip_report_tool = FunctionTool.from_defaults(
+    fn=generate_trip_report,
+    return_direct=False
+)
 
 

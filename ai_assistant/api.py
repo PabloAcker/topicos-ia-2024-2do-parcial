@@ -5,10 +5,11 @@ from ai_assistant.models import AgentAPIResponse
 from ai_assistant.tools import reserve_flight, reserve_bus, reserve_hotel, reserve_restaurant
 from typing import List
 from datetime import datetime
+from ai_assistant.prompts import agent_prompt_tpl
 
 
 def get_agent() -> ReActAgent:
-    return TravelAgent().get_agent()
+    return TravelAgent(agent_prompt_tpl).get_agent()
 
 
 app = FastAPI(title="AI Agent")
